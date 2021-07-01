@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Jun 27 19:18:24 2021
 
-@author: Lucia Zabaleta
-"""
 from nltk.corpus import twitter_samples
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
@@ -23,11 +19,11 @@ neg = twitter_samples.strings('negative_tweets.json')
     
 
 def tweet_cleaner(tweet):
-    tweet = re.sub("@[A-Za-z0-9]+","",tweet).strip() #Remove user
-    tweet = re.sub(r"(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*|\/+", "", tweet) #Remove links
-    tweet = re.sub(r"(\w)\1+", r"\1\1",tweet) #Normalize words that has repeated letters
-    tweet = re.sub(r"\d+:\d+\s?","",tweet) #Remove hours
-    tweet = tweet.replace('\n', ' ').replace('#','').replace('_','') #Remove hashtag but keep the text and remove newlines
+    tweet = re.sub("@[A-Za-z0-9]+","",tweet).strip() #Remueve usuario
+    tweet = re.sub(r"(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*|\/+", "", tweet) #Remueve links o forward slash en medio de palabras
+    tweet = re.sub(r"(\w)\1+", r"\1\1",tweet) #Normaliza palabras con letras repetidas
+    tweet = re.sub(r"\d+:\d+\s?","",tweet) #Remueve horas
+    tweet = tweet.replace('\n', ' ').replace('#','').replace('_','') #Remueve Hashtags pero conserva el texto y remueve saltos de linea
     tweet = " ".join(tweet.split())
     return tweet
 
@@ -59,18 +55,23 @@ def tweet_tokenizer(clean_tweet,lang='english'):
     b = [x for x in a if x not in sw and x.isalpha() == True and len(x) >= 2]
     return b
  
-    
+# Aplica la primer funcion de limpieza a las listas de tweets    
 pos_clean = list(map(tweet_cleaner,pos))
 
 neg_clean = list(map(tweet_cleaner,neg))
 
+# Agrega los Labels
 pos_label = list(map(lambda x : [x, 'pos'],pos_clean))
 neg_label = list(map(lambda x : [x, 'neg'],neg_clean)) 
 
+
+# Une las 2 listas y las transforma a un n.array de 2D
 full_data = np.array(pos_label + neg_label)
+
    
 np.random.shuffle(full_data)
 
+# Inicializar el CountVectorizer con la 2da funcion como "analyzer"
 vectorizer = CountVectorizer(analyzer=tweet_tokenizer)
 
 all_features = vectorizer.fit(full_data[:,0])
@@ -83,14 +84,14 @@ tfidf_t = tfidf_features.transform(features_t)
 
 X_train, X_test, y_train, y_test = train_test_split(tfidf_t, full_data[:,1],test_size=0.3,random_state=42)
 
-# First Model
+# Instanciar el primer modelo
 cl = MultinomialNB()
 
 cl.fit(X_train,y_train)
 
 cl.score(X_test, y_test)
 
-# Second Model
+# Segundo modelo
 svm_cl = SVC(kernel='linear',probability=True)
 
 svm_cl.fit(X_train,y_train)
@@ -98,7 +99,7 @@ svm_cl.fit(X_train,y_train)
 svm_cl.score(X_test, y_test)
 
 
-# Prediction test for new  non seen elements
+# Predicciones para datos nuevos no vistos por el/los modelos
 text_list = np.array(['this product is really very good!',
              'i dont like it at all :(',
              'You are so nice :)', 
@@ -111,11 +112,14 @@ text_matrix = vectorizer.transform(text_list)
 
 cl.predict(text_matrix)
 
+# En caso de querer agregar nuevos tweets desde Twitter
 
-# gr = list(map(lambda x : tweet_tokenizer(x,lang='english'),gt))
-# gr = list(map(lambda x : [x, 'pos'],gr))
-# full = np.array(gr)
-# spanish_text = [tweet_cleaner(elem['retweeted_status']['full_text'])  if elem['full_text'].startswith('RT') else tweet_cleaner(elem['full_text']) for elem in spanish_list]
-# pos_tokenize = list(map(lambda x : tweet_tokenizer(x,lang='english'),pos_clean))
-# neg_tokenize = list(map(lambda x : tweet_tokenizer(x,lang='english'),neg_clean))
+new_list = tweet_seacrh('keyword', 300)
+
+new_tweets_text = np.array([tweet_cleaner(elem['retweeted_status']['full_text'])  if elem['full_text'].startswith('RT') else tweet_cleaner(elem['full_text']) for elem in new_list])
+
+new_matrix = vectorizer.transform(new_tweets_text)
+
+cl.predict(new_matrix)
+
 
