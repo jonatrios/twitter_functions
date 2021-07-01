@@ -27,9 +27,9 @@ def user_timeline(username,n):
 
 
 # Busca por palabra clave segun lenjuaje indicado
-def tweet_seacrh(keyword,lang,n):
+def tweet_seacrh(keyword,n,lan='en'):
     search_list = []
-    for t in tweepy.Cursor(api.search, q=keyword,lang=lang,
+    for t in tweepy.Cursor(api.search, q=keyword,lang=lan,
                            tweet_mode='extended').items(n): #numero de tweets a traer
         t_json = json.dumps(t._json)
         search_list.append(json.loads(t_json,object_hook=date_hook))
