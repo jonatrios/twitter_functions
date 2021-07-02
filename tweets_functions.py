@@ -26,7 +26,7 @@ def user_timeline(username,n):
     return twet_list
 
 
-# Busca por palabra clave segun lenjuaje indicado
+# Busca por palabra clave segun lenguaje indicado
 def tweet_seacrh(keyword,n,lan='en'):
     search_list = []
     for t in tweepy.Cursor(api.search, q=keyword,lang=lan,

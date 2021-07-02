@@ -27,7 +27,7 @@ def tweet_cleaner(tweet):
     tweet = " ".join(tweet.split())
     return tweet
 
-# Tokenize to 
+# Tokeniza a listas
 def tweet_tokenizer(clean_tweet,lang='english'):
     ttk = TweetTokenizer()
     emoji_pattern = re.compile("["
