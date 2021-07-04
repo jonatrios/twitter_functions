@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from twitter_keys import  api_key, api_secret_key, access_token, access_token_secret,env_name
+from twitter_keys import  *
 import tweepy
 import json
 from datetime import datetime
