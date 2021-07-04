@@ -27,12 +27,15 @@ def user_timeline(username,n):
 
 
 # Busca por palabra clave segun lenguaje indicado
-def tweet_seacrh(keyword,n,lan='en'):
+def tweet_seacrh(keyword,n,lan='en',only_text=False):
     search_list = []
     for t in tweepy.Cursor(api.search, q=keyword,lang=lan,
                            tweet_mode='extended').items(n): #numero de tweets a traer
         t_json = json.dumps(t._json)
         search_list.append(json.loads(t_json,object_hook=date_hook))
+        if only_text:
+            o_t = only_text(search_list)
+            return o_t
     return search_list
 
 # Trae tweets desde una fecha mendionada segun palabra clave
@@ -45,6 +48,12 @@ def historical_search(keyword,from_date,n):
         h_list.append(json.loads(t_json,object_hook=date_hook))
     return h_list
 
+def only_text(obj):
+    if isinstance(obj,list):
+        new_tweets_text = [elem['retweeted_status']['full_text']  if elem['full_text'].startswith('RT') else elem['full_text'] for elem in obj]
+        return new_tweets_text
+    else:
+        print('Error, necesita una lista de valores')
 
 #helper function para manejar las fechas, castea a uso horario Argentina
 def date_hook(json_dict):
